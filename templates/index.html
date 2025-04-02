@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IP域名封堵管理</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-bottom: 30px;
+            color: #0d6efd;
+        }
+        textarea {
+            margin-bottom: 20px;
+        }
+        .btn-group {
+            margin-bottom: 20px;
+        }
+        .alert {
+            margin-top: 20px;
+        }
+        /* 添加新的样式来美化列表 */
+        .alert ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .alert li {
+            margin-bottom: 5px;
+            font-size: 16px;
+            color: #333;
+        }
+        /* 新增样式，突出显示存在的IP或域名 */
+        .alert li.exists {
+            font-weight: bold;
+            color: red;
+        }
+        /* 新增样式，突出显示不存在的IP或域名 */
+        .not-exist {
+            font-weight: bold;
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">IP域名封堵管理系统</h1>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="ips" class="form-label">输入IP地址或域名（每行一个）</label>
+                <textarea class="form-control" id="ips" name="ips" rows="10" placeholder="每行输入一个IP地址或域名"></textarea>
+            </div>
+            <div class="btn-group" role="group">
+                <button type="submit" name="action" value="查询" class="btn btn-primary">查询列表</button>
+                <button type="submit" name="action" value="封堵" class="btn btn-danger">封堵IP或域名</button>
+                <button type="submit" name="action" value="解封" class="btn btn-warning">解封IP或域名</button>
+                <a href="/export_ips" download class="btn btn-success">导出IP列表</a>
+                <button type="button" class="btn btn-info" onclick="confirmInitDB()">初始化数据库</button>
+            </div>
+
+    {% if messages %}
+        <div class="alert alert-danger">
+            {% for msg in messages %}
+                {% if 'IP已存在封禁列表' in msg %}
+                    <div style="background-color: #fff3cd; padding: 5px; border-radius: 4px;">{{ msg|safe }}</div>
+                {% else %}
+                    <div>{{ msg|safe }}<small class="text-muted">{{ msg.created_at.strftime('%Y-%m-%d %H:%M') if msg.created_at else '' }}</small></div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if success %}
+        <div class="alert alert-success">
+            <div>{{ success|safe }}<small class="text-muted">{{ success.unblocked_at.strftime('%Y-%m-%d %H:%M') if success.unblocked_at else '' }}</small></div>
+        </div>
+    {% endif %}
+    <!-- 修改列表输出，添加exists类 -->
+    <div class="alert alert-info">
+        <ul>
+            {% for ip, exists in blocked_ips %}
+                <li{% if exists %} class="exists"{% endif %}>{{ ip }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function confirmInitDB() {
+            if (confirm('确定要初始化数据库吗？这将清除所有现有数据！')) {
+                window.location.href = '/confirm_init_db';
+            }
+        }
+    </script>
+</body>
+</html>
